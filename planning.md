@@ -14,7 +14,7 @@ MongoDB
 3- Comments
 
 - If you're using a relational database, what relationships do you need between models?
-Users will have Posts
+Users will have Posts and Comments
 Posts will have Users and Comments
 Comments will have Users
 
@@ -28,4 +28,4 @@ Create, Read, Update, Delete -> Posts & Comments
 Express
 
 # Backend Testing
--
+No tests
