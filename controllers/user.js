@@ -1,5 +1,7 @@
+require("dotenv").config();
 const Posts = require("../models/post");
 const Messages = require("../models/message");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
@@ -38,8 +40,36 @@ exports.create_users_post = [
 				admin: false,
 			});
 
-			user.save();
-			res.sendStatus(200);
+			const savedUser = user.save();
+			res.json(savedUser);
 		});
+	}),
+];
+
+exports.create_users_get = (req, res, next) => {
+	res.json({});
+};
+
+exports.create_users_post = [
+	body("username", "Please use correct email form").trim().isEmail().escape(),
+	body("password", "Password must be more than 6 characters")
+		.trim()
+		.isLength({ min: 6 })
+		.escape(),
+
+	asyncHandler(async (req, res, next) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			res.status(403).res.json({ error: errors.msg });
+		}
+		const user = await User.findOne({ email: req.body.email });
+		const match = await bcrypt.compare(req.body.password === user.password);
+		const accessToken = jwt.sign(JSON.stringify(user), process.env.TOKEN_SECRET);
+
+		if (match) {
+			res.json({ accessToken });
+		} else {
+			res.json({ message: "invalid info" });
+		}
 	}),
 ];
