@@ -1,6 +1,6 @@
 require("dotenv").config();
 const Posts = require("../models/post");
-const Messages = require("../models/message");
+const Comments = require("../models/comment");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
