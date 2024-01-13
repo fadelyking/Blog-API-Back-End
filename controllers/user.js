@@ -8,7 +8,7 @@ const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 
 exports.create_users_get = (req, res, next) => {
-	res.json({});
+	res.json({ message: "This route works" });
 };
 
 exports.create_users_post = [
@@ -19,7 +19,7 @@ exports.create_users_post = [
 		.trim()
 		.isLength({ min: 6 })
 		.escape(),
-	body("confirmpassword", "Passwords are not matching")
+	body("confirm_password", "Passwords are not matching")
 		.trim()
 		.custom((value, { req }) => {
 			return value === req.body.password;
