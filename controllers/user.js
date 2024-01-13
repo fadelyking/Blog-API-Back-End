@@ -46,11 +46,11 @@ exports.create_users_post = [
 	}),
 ];
 
-exports.create_users_get = (req, res, next) => {
+exports.login_get = (req, res, next) => {
 	res.json({});
 };
 
-exports.create_users_post = [
+exports.login_post = [
 	body("username", "Please use correct email form").trim().isEmail().escape(),
 	body("password", "Password must be more than 6 characters")
 		.trim()
