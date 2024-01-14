@@ -14,7 +14,7 @@ exports.create_users_get = (req, res, next) => {
 exports.create_users_post = [
 	body("first_name", "Must be more than 1 letter").trim().isLength({ min: 1 }).escape(),
 	body("last_name", "Must be more than 1 letter").trim().isLength({ min: 1 }).escape(),
-	body("username", "Please use correct email form").trim().isEmail().escape(),
+	body("email", "Please use correct email form").trim().isEmail().escape(),
 	body("password", "Password must be more than 6 characters")
 		.trim()
 		.isLength({ min: 6 })
@@ -27,23 +27,25 @@ exports.create_users_post = [
 
 	asyncHandler(async (req, res, next) => {
 		const errors = validationResult(req);
+		console.log(req);
 
 		if (!errors.isEmpty()) {
 			console.log(errors);
 			res.json({ error: errors.array() });
-		}
-		bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
-			const user = new User({
-				first_name: req.body.first_name,
-				last_name: req.body.last_name,
-				email: req.body.email,
-				password: hashedPassword,
-				admin: false,
-			});
+		} else {
+			bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
+				const user = new User({
+					first_name: req.body.first_name,
+					last_name: req.body.last_name,
+					email: req.body.email,
+					password: hashedPassword,
+					admin: false,
+				});
 
-			const savedUser = user.save();
-			res.json(savedUser);
-		});
+				await user.save();
+				res.status(200).json({ message: "User Created" });
+			});
+		}
 	}),
 ];
 
@@ -52,19 +54,22 @@ exports.login_get = (req, res, next) => {
 };
 
 exports.login_post = [
-	body("username", "Please use correct email form").trim().isEmail().escape(),
+	body("email", "Please use correct email form").trim().isEmail().escape(),
 	body("password", "Password must be more than 6 characters")
 		.trim()
 		.isLength({ min: 6 })
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
+		console.log(req.body.email);
+		console.log(req.body.password);
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			res.status(403).res.json({ error: errors.msg });
 		}
 		const user = await User.findOne({ email: req.body.email });
-		const match = await bcrypt.compare(req.body.password === user.password);
+		const match = await bcrypt.compare(req.body.password, user.password);
+		console.log(match);
 		const accessToken = jwt.sign(JSON.stringify(user), process.env.TOKEN_SECRET);
 
 		if (match) {
