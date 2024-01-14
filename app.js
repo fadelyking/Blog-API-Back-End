@@ -4,9 +4,8 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const mongoose = require("mongoose");
-const indexRouter = require("./routes/post");
+const postsRouter = require("./routes/post");
 const usersRouter = require("./routes/user");
-
 const mongoDB = process.env.MONGODB_URI;
 main().catch((err) => console.log(err));
 async function main() {
@@ -20,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/", indexRouter);
+app.use("/", postsRouter);
 app.use("/user", usersRouter);
 
 // catch 404 and forward to error handler
