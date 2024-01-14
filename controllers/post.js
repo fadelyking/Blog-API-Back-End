@@ -1,5 +1,7 @@
 require("dotenv").config();
 const Posts = require("../models/post");
+const verify = require("../config/verifyToken");
+const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 
@@ -18,29 +20,44 @@ exports.post_detail = asyncHandler(async (req, res, next) => {
 });
 
 exports.create_post_get = (req, res, next) => {
-	res.json("Create post route active");
+	jwt.verify(req.token, process.env.TOKEN_SECRET, (err, authData) => {
+		if (err) {
+			res.sendStatus(403);
+		} else {
+			res.json({ message: "Create post route active", authData });
+		}
+	});
 };
 
 exports.create_post_post = [
-	body("title", "Title must be more than 3 letters long").trim().isLength({ min: 3 }).exec(),
+	body("title", "Title must be more than 3 letters long").trim().isLength({ min: 3 }).escape(),
 	body("content", "Content must be more than 10 letters long")
 		.trim()
-		.isLength({ min: 10 }.exec()),
+		.isLength({ min: 10 })
+		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			res.json(errors.array());
-		}
+		jwt.verify(req.token, process.env.TOKEN_SECRET, (err, authData) => {
+			if (err) {
+				console.log(err);
+				res.sendStatus(403);
+			} else {
+				const errors = validationResult(req);
+				if (!errors.isEmpty()) {
+					res.json(errors.array());
+				}
 
-		const post = new Posts({
-			title: req.body.title,
-			content: req.body.content,
-			likes: 0,
+				const post = new Posts({
+					user: authData._id,
+					title: req.body.title,
+					content: req.body.content,
+					likes: 0,
+				});
+
+				post.save();
+				res.json({ message: "Post Created" });
+			}
 		});
-
-		post.save();
-		res.json({ message: "Post Created" });
 	}),
 ];
 
@@ -51,10 +68,11 @@ exports.update_post_get = asyncHandler(async (req, res, next) => {
 });
 
 exports.update_post_post = [
-	body("title", "Title must be more than 3 letters long").trim().isLength({ min: 3 }).exec(),
+	body("title", "Title must be more than 3 letters long").trim().isLength({ min: 3 }).escape(),
 	body("content", "Content must be more than 10 letters long")
 		.trim()
-		.isLength({ min: 10 }.exec()),
+		.isLength({ min: 10 })
+		.escape(),
 
 	asyncHandler(async (req, res, next) => {
 		const errors = validationResult(req);
