@@ -6,7 +6,7 @@ const PostSchema = new Schema({
 	title: String,
 	content: String,
 	likes: Number,
-	comments: { type: Schema.Types.ObjectId, ref: "Comment" },
+	comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 	published: Boolean,
 });
 
