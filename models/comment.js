@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 
 const CommentSchema = new Schema({
 	user: { type: Schema.Types.ObjectId, ref: "User" },
-	content: String,
+	post: { type: Schema.Types.ObjectId, ref: "Post" },
+	comment: String,
 });
 
 module.exports = mongoose.model("Comment", CommentSchema);
