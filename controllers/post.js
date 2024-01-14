@@ -15,13 +15,13 @@ exports.index = asyncHandler(async (req, res, next) => {
 
 exports.post_detail = asyncHandler(async (req, res, next) => {
 	const post = await Posts.findById(req.params.id).populate("user").populate("comments").exec();
-	res.json({ post: post });
+	res.json({ post });
 });
 
 exports.create_post_get = (req, res, next) => {
 	jwt.verify(req.token, process.env.TOKEN_SECRET, (err, authData) => {
 		if (err) {
-			res.sendStatus(403);
+			res.json({ auth: false });
 		} else {
 			res.json({ message: "Create post route active", authData });
 		}
@@ -82,6 +82,7 @@ exports.update_post_post = [
 		const post = new Posts({
 			title: req.body.title,
 			content: req.body.content,
+			likes: req.body.likes,
 			_id: req.params.id,
 		});
 
@@ -91,7 +92,7 @@ exports.update_post_post = [
 ];
 
 exports.delete_post_get = asyncHandler(async (req, res, next) => {
-	const post = await Posts.findById(req.params.id).exec();
+	const post = await Posts.findByIdAndDelete(req.params.id).exec();
 
 	res.json({ post });
 });
