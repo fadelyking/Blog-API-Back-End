@@ -52,7 +52,6 @@ exports.create_post_post = [
 					content: req.body.content,
 					likes: 0,
 				});
-
 				post.save();
 				res.json({ message: "Post Created" });
 			}

@@ -11,6 +11,7 @@ exports.list_comments_get = asyncHandler(async (req, res, next) => {
 });
 
 exports.create_comment_post = asyncHandler(async (req, res, next) => {
+	const post = await Posts.findById(req.params.id);
 	jwt.verify(req.token, process.env.TOKEN_SECRET, (err, auth) => {
 		if (err) {
 			res.json({ message: "Please login to post" });
@@ -20,22 +21,12 @@ exports.create_comment_post = asyncHandler(async (req, res, next) => {
 				post: req.params.id,
 				comment: req.body.comment,
 			});
-			const thepost = Posts.findById(req.params.id);
-			console.log(thepost);
 			comment.save();
+			post.comments.push(comment);
+			post.save();
 			res.json({ message: "Posted" });
 		}
 	});
-
-	const post = new Posts({
-		title: req.body.title,
-		comment: req.body.comment,
-		likes: req.body.likes,
-		comments: req.body.comment,
-		_id: req.params.id,
-	});
-
-	await Posts.findByIdAndUpdate(req.params.id, post);
 });
 
 exports.delete_comment_post = asyncHandler(async (req, res, next) => {
