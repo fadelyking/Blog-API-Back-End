@@ -1,4 +1,4 @@
-function verifyToken(req, res, next) {
+module.exports = function verifyToken(req, res, next) {
 	const bearerHeader = req.headers["authorization"];
 	if (typeof bearerHeader !== "undefined") {
 		const bearer = bearerHeader.split(" ");
@@ -6,8 +6,6 @@ function verifyToken(req, res, next) {
 		req.token = bearerToken;
 		next();
 	} else {
-		res.sendStatus(403).res.json("Invalid Token");
+		res.status(403).res.json("Invalid Token");
 	}
-}
-
-module.exports = verifyToken;
+};
