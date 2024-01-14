@@ -12,6 +12,11 @@ exports.index = asyncHandler(async (req, res, next) => {
 	}
 });
 
+exports.post_detail = asyncHandler(async (req, res, next) => {
+	const post = await Posts.findById(req.params.id).populate("user").populate("comments").exec();
+	res.json({ post: post });
+});
+
 exports.create_post_get = (req, res, next) => {
 	res.json("Create post route active");
 };
