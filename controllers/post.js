@@ -35,7 +35,7 @@ exports.create_post_post = [
 		});
 
 		post.save();
-		res.json({ post });
+		res.json({ message: "Post Created" });
 	}),
 ];
 
@@ -64,5 +64,17 @@ exports.update_post_post = [
 		});
 
 		await Posts.findByIdAndUpdate(req.params.id, post);
+		res.json({ message: "Post Edited" });
 	}),
 ];
+
+exports.delete_post_get = asyncHandler(async (req, res, next) => {
+	const post = await Posts.findById(req.params.id).exec();
+
+	res.json({ post });
+});
+
+exports.delete_posts_post = asyncHandler(async (req, res, next) => {
+	await Posts.findByIdAndDelete(req.params.id).exec();
+	res.json({ message: "Post Deleted" });
+});
