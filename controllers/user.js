@@ -29,7 +29,8 @@ exports.create_users_post = [
 		const errors = validationResult(req);
 
 		if (!errors.isEmpty()) {
-			res.sendStatus(403).json({ error: errors.msg });
+			console.log(errors);
+			res.json({ error: errors.array() });
 		}
 		bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
 			const user = new User({
