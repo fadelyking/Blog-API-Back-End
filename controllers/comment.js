@@ -34,10 +34,9 @@ exports.delete_comment_post = asyncHandler(async (req, res, next) => {
 		if (err) {
 			res.json({ message: "Please login to delete" });
 		} else {
-			const comment = Comments.findByIdAndDelete(req.params.id).exec();
+			Comments.findOneAndDelete({ comments: req.body.comment }).exec();
 
-			comment.save();
-			res.json({ message: "Posted" });
+			res.json({ message: "Deleted" });
 		}
 	});
 });
