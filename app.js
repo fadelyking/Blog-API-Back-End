@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/", postsRouter);
-app.use("/", commentRouter);
+app.use("/comment", commentRouter);
 app.use("/user", usersRouter);
 
 // catch 404 and forward to error handler
