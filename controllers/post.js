@@ -6,11 +6,16 @@ const { body, validationResult } = require("express-validator");
 
 exports.index = asyncHandler(async (req, res, next) => {
 	const posts = await Posts.find().populate("user").populate("comments").exec();
-	if (posts.length === 0) {
-		res.json("No posts, be the first to post !");
-	} else {
-		res.json({ posts: posts });
-	}
+	jwt.verify(req.token, process.env.TOKEN_SECRET, (err, authData) => {
+		if (err) {
+			res.json({ posts: posts });
+		} else {
+			if (posts.length === 0) {
+				res.json({ message: "No posts, be the first to post !", user: authData });
+			}
+			res.json({ posts: posts, user: authData });
+		}
+	});
 });
 
 exports.post_detail = asyncHandler(async (req, res, next) => {
@@ -23,7 +28,7 @@ exports.create_post_get = (req, res, next) => {
 		if (err) {
 			res.json({ auth: false });
 		} else {
-			res.json({ message: "Create post route active", authData });
+			res.json({ message: "Create post route active", user: authData });
 		}
 	});
 };
@@ -60,9 +65,15 @@ exports.create_post_post = [
 ];
 
 exports.update_post_get = asyncHandler(async (req, res, next) => {
-	const post = await Posts.findById(req.params.id).exec();
+	jwt.verify(req.token, process.env.TOKEN_SECRET, (err, authData) => {
+		if (err) {
+			res.json("You are not authorized to view this");
+		} else {
+			const post = Posts.findById(req.params.id).exec();
 
-	res.json(post);
+			res.json({ post: post, user: authData });
+		}
+	});
 });
 
 exports.update_post_post = [
@@ -73,30 +84,47 @@ exports.update_post_post = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			res.json({ error: errors.array() });
-		}
+		jwt.verify(req.token, process.env.TOKEN_SECRET, (err, authData) => {
+			if (err) {
+				res.json("You are not authorized to view this");
+			} else {
+				const errors = validationResult(req);
+				if (!errors.isEmpty()) {
+					res.json({ error: errors.array() });
+				}
 
-		const post = new Posts({
-			title: req.body.title,
-			content: req.body.content,
-			likes: req.body.likes,
-			_id: req.params.id,
+				const post = new Posts({
+					title: req.body.title,
+					content: req.body.content,
+					likes: req.body.likes,
+					_id: req.params.id,
+				});
+
+				Posts.findByIdAndUpdate(req.params.id, post);
+				res.json({ message: "Post Edited" });
+			}
 		});
-
-		await Posts.findByIdAndUpdate(req.params.id, post);
-		res.json({ message: "Post Edited" });
 	}),
 ];
 
 exports.delete_post_get = asyncHandler(async (req, res, next) => {
-	const post = await Posts.findByIdAndDelete(req.params.id).exec();
-
-	res.json({ post });
+	jwt.verify(req.token, process.env.TOKEN_SECRET, (err, authData) => {
+		if (err) {
+			res.json({ message: "You are not authorized to view this" });
+		} else {
+			const post = Posts.findById(req.params.id).exec();
+			res.json({ post: post, user: authData });
+		}
+	});
 });
 
 exports.delete_posts_post = asyncHandler(async (req, res, next) => {
-	await Posts.findByIdAndDelete(req.params.id).exec();
-	res.json({ message: "Post Deleted" });
+	jwt.verify(req.token, process.env.TOKEN_SECRET, (err, authData) => {
+		if (err) {
+			res.json({ message: "You are not authorized to view this" });
+		} else {
+			res.json({ message: "Post Deleted", user: authData });
+			Posts.findByIdAndDelete(req.params.id).exec();
+		}
+	});
 });
