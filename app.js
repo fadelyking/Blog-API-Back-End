@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const postsRouter = require("./routes/post");
 const usersRouter = require("./routes/user");
 const commentRouter = require("./routes/comment");
+const cors = require('cors')
 const mongoDB = process.env.MONGODB_URI;
 main().catch((err) => console.log(err));
 async function main() {
@@ -14,7 +15,7 @@ async function main() {
 }
 var app = express();
 const jwt = require("jsonwebtoken");
-
+app.use(cors())
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
