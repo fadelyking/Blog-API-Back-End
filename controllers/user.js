@@ -12,20 +12,23 @@ exports.create_users_get = asyncHandler(async (req, res, next) => {
   res.json({ user: user });
 });
 exports.create_users_post = [
-  body("first_name", "Must be more than 1 letter")
+  body("credentials.first_name", "First name must be more than 1 letter")
     .trim()
     .isLength({ min: 1 })
     .escape(),
-  body("last_name", "Must be more than 1 letter")
+  body("credentials.last_name", "Last name must be more than 1 letter")
     .trim()
     .isLength({ min: 1 })
     .escape(),
-  body("email", "Please use correct email form").trim().isEmail().escape(),
-  body("password", "Password must be more than 6 characters")
+  body("credentials.email", "Please use correct email form")
+    .trim()
+    .isEmail()
+    .escape(),
+  body("credentials.password", "Password must be more than 6 characters")
     .trim()
     .isLength({ min: 6 })
     .escape(),
-  body("confirm_password", "Passwords are not matching")
+  body("credentials.confirm_password", "Passwords are not matching")
     .trim()
     .custom((value, { req }) => {
       return value === req.body.password;
@@ -33,25 +36,25 @@ exports.create_users_post = [
 
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
-    console.log(req);
-
-    if (!errors.isEmpty()) {
-      console.log(errors);
-      res.json({ error: errors.array() });
-    } else {
-      bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
-        const user = new User({
-          first_name: req.body.first_name,
-          last_name: req.body.last_name,
-          email: req.body.email,
-          password: hashedPassword,
-          admin: false,
-        });
-
-        await user.save();
-        res.status(200).json({ message: "User Created" });
+    const userObj = { ...req.body.credentials };
+    console.log(userObj);
+    bcrypt.hash(userObj.password, 10, async (err, hashedPassword) => {
+      console.log("this works");
+      const user = new User({
+        first_name: userObj.first_name,
+        last_name: userObj.last_name,
+        email: userObj.email,
+        password: hashedPassword,
+        admin: false,
       });
-    }
+
+      if (!errors.isEmpty()) {
+        console.log(errors);
+        res.json({ error: errors.array() });
+      } else {
+        await user.save();
+      }
+    });
   }),
 ];
 
@@ -67,25 +70,24 @@ exports.login_post = [
     .escape(),
 
   asyncHandler(async (req, res, next) => {
-    console.log(req.body.email);
-    console.log(req.body.password);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log(errors);
-      res.status(403).res.json({ error: errors });
+      res.status(403).res.json({ error: errors.array() });
     }
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({
+      email: req.body.email,
+    });
     const match = await bcrypt.compare(req.body.password, user.password);
     console.log(match);
     const accessToken = jwt.sign(
       JSON.stringify(user),
       process.env.TOKEN_SECRET
     );
-
+    console.log(match);
     if (match) {
-      res.json({ accessToken });
+      res.json({ token: accessToken });
     } else {
-      res.json({ message: "invalid info" });
+      res.status("403").json("Please enter correct credentials");
     }
   }),
 ];
