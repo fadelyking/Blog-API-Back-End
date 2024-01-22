@@ -12,23 +12,20 @@ exports.create_users_get = asyncHandler(async (req, res, next) => {
   res.json({ user: user });
 });
 exports.create_users_post = [
-  body("credentials.first_name", "First name must be more than 1 letter")
+  body("first_name", "First name must be more than 1 letter")
     .trim()
     .isLength({ min: 1 })
     .escape(),
-  body("credentials.last_name", "Last name must be more than 1 letter")
+  body("last_name", "Last name must be more than 1 letter")
     .trim()
     .isLength({ min: 1 })
     .escape(),
-  body("credentials.email", "Please use correct email form")
-    .trim()
-    .isEmail()
-    .escape(),
-  body("credentials.password", "Password must be more than 6 characters")
+  body("email", "Please use correct email form").trim().isEmail().escape(),
+  body("password", "Password must be more than 6 characters")
     .trim()
     .isLength({ min: 6 })
     .escape(),
-  body("credentials.confirm_password", "Passwords are not matching")
+  body("confirm_password", "Passwords are not matching")
     .trim()
     .custom((value, { req }) => {
       return value === req.body.password;
@@ -51,9 +48,8 @@ exports.create_users_post = [
       if (!errors.isEmpty()) {
         console.log(errors);
         res.json({ error: errors.array() });
-      } else {
-        await user.save();
       }
+      await user.save();
     });
   }),
 ];
